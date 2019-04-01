@@ -27,7 +27,7 @@ fi
 # get the tag info
 eval $(egrep '[A-Z]+=' ../.env)
 
-echo "Repo $REPO"
+echo "Repo $GITHUB_USER"
 echo "Tag $TAG"
 
 while getopts 'edn:h:' OPT

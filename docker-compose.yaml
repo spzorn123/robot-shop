@@ -3,7 +3,7 @@ services:
   mongodb:
     build:
       context: mongo
-    image: $REPO/rs-mongodb:$TAG
+    image: $GITHUB_USER/rs-mongodb:$TAG
     networks:
       - robot-shop
     deploy:
@@ -13,7 +13,7 @@ services:
   mysql:
     build:
       context: mysql
-    image: $REPO/rs-mysql-db:$TAG
+    image: $GITHUB_USER/rs-mysql-db:$TAG
     cap_add:
       - NET_ADMIN
     networks:
@@ -41,7 +41,7 @@ services:
   catalogue:
     build:
       context: catalogue
-    image: $REPO/rs-catalogue:$TAG
+    image: $GITHUB_USER/rs-catalogue:$TAG
     depends_on:
       - mongodb
     networks:
@@ -59,7 +59,7 @@ services:
   cart:
     build:
       context: cart
-    image: $REPO/rs-cart:$TAG
+    image: $GITHUB_USER/rs-cart:$TAG
     depends_on:
       - redis
     networks:
@@ -78,7 +78,7 @@ services:
   user:
     build:
       context: user
-    image: $REPO/rs-user:$TAG
+    image: $GITHUB_USER/rs-user:$TAG
     depends_on:
       - mongodb
       - redis
@@ -98,7 +98,7 @@ services:
   shipping:
     build:
       context: shipping
-    image: $REPO/rs-shipping:$TAG
+    image: $GITHUB_USER/rs-shipping:$TAG
     depends_on:
       - mysql
     networks:
@@ -117,7 +117,7 @@ services:
   ratings:
     build:
       context: ratings
-    image: $REPO/rs-ratings:$TAG
+    image: $GITHUB_USER/rs-ratings:$TAG
     networks:
       - robot-shop
     depends_on:
@@ -136,7 +136,7 @@ services:
   payment:
     build:
       context: payment
-    image: $REPO/rs-payment:$TAG
+    image: $GITHUB_USER/rs-payment:$TAG
     depends_on:
       - rabbitmq
     networks:
@@ -156,7 +156,7 @@ services:
   dispatch:
     build:
       context: dispatch
-    image: $REPO/rs-dispatch:$TAG
+    image: $GITHUB_USER/rs-dispatch:$TAG
     depends_on:
       - rabbitmq
     networks:
@@ -173,7 +173,7 @@ services:
   web:
     build:
       context: web
-    image: $REPO/rs-web:$TAG
+    image: $GITHUB_USER/rs-web:$TAG
     depends_on:
       - catalogue
       - user

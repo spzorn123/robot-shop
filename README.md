@@ -37,21 +37,8 @@ Fire up Stan's Robot Shop with:
 
     $ docker-compose up
 
-## Kubernetes
-The Docker container images are all available on [Docker Hub](https://hub.docker.com/u/robotshop/). The pod and service definition files using these images are in the *K8s* directory, use these to deploy to a Kubernetes cluster. If you pushed your own images to your registry the pod files will need to be updated to pull from your registry; using [kompose](https://github.com/kubernetes/kompose) may be of assistance here.
-
-If you want to deploy Stan's Robot Shop to Google Compute you will need to edit the *K8s/web-service.yaml* file and change the type from NodePort to LoadBalancer. This can also be done in the Google Compute console.
-
-#### NOTE
-I have found some issues with kompose reading the *.env* correctly, just export the variables in the shell environment to work around this.
-
-You can also run Kubernetes locally using [minikube](https://github.com/kubernetes/minikube).
-
-    $ kubectl create namespace robot-shop
-    $ kubectl -n robot-shop create -f K8s/manifests
-
 ## Acessing the Store
-If you are running the store locally via *docker-compose up* then, the store front is available on localhost port 8080 [http://localhost:8080](http://localhost:8080/)
+If you are running the store locally via *docker-compose up* then, the store front is available on localhost port 8080 [http://localhost:8080](http://localhost:8888/)
 
 If you are running the store on Kubernetes via minikube then, to make the store front accessible edit the *web* service definition and change the type to *NodePort* and add a port entry *nodePort: 30080*.
 

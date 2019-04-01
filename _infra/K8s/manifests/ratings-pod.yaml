@@ -21,7 +21,7 @@ spec:
       value: http://catalogue-$DATACENTER:8080/
     - name: PDO_URL
       value: mysql:host=mysql-$DATACENTER;dbname=ratings;charset=utf8mb4
-    image: $REPO/rs-ratings:$TAG
+    image: $GITHUB_USER/rs-ratings:$TAG
     name: ratings
     ports:
     - containerPort: 8080

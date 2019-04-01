@@ -3,7 +3,7 @@
 # get the tag info
 eval $(egrep '[A-Z]+=' ../.env)
 
-echo "Repo $REPO"
+echo "Repo $GITHUB_USER"
 echo "Tag $TAG"
 
 docker build -t ${REPO}/rs-load:${TAG} . && docker tag ${REPO}/rs-load:${TAG} ${REPO}/rs-load

@@ -8,7 +8,7 @@ metadata:
   name: mongodb-$DATACENTER
 spec:
   containers:
-  - image: $REPO/rs-mongodb:$TAG
+  - image: $GITHUB_USER/rs-mongodb:$TAG
     name: mongodb
     resources: {}
   restartPolicy: OnFailure

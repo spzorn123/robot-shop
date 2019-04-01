@@ -23,10 +23,12 @@ spec:
   - name: install
     image: busybox
     env:
-    - name: CONFIG_SCRIPT
-      value: "https://github.com/$REPO/robot-shop/blob/master/newrelic-integrations/k8s-nri-rabbitmq-config.sh"
-    command: ["/bin/sh","-c"]
-    args: ["mkdir -p /work-dir/newrelic-infra/integrations.d && wget -sO /tmp/config https://github.com/$REPO/robot-shop/blob/master/newrelic-integrations/k8s-nri-rabbitmq-config.sh"]
+    - name: GITHUB_USER
+      value: $GITHUB_USER
+    - name: GITHUB_REPO
+      value: $GITHUB_REPO
+    command: ["/bin/sh", "-c", |
+      "https://raw.githubusercontent.com/$GITHUB_USER/$GITHUB_REPO/master/newrelic-integrations/k8s-nri-rabbitmq-config.sh"]
     volumeMounts:
     - name: work-dir
       mountPath: "/work-dir"

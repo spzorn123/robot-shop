@@ -8,7 +8,7 @@ metadata:
   name: mysql-$DATACENTER
 spec:
   containers:
-  - image: $REPO/rs-mysql-db:$TAG
+  - image: $GITHUB_USER/rs-mysql-db:$TAG
     name: mysql
     resources: {}
     securityContext:

@@ -19,7 +19,7 @@ spec:
       value: datacenter:$DATACENTER;service:dispatch
     - name: AMQP_HOST
       value: rabbitmq-$DATACENTER
-    image: $REPO/rs-dispatch:$TAG
+    image: $GITHUB_USER/rs-dispatch:$TAG
     name: dispatch
     ports:
     - containerPort: 8080

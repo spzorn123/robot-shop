@@ -22,7 +22,7 @@ for VAR in $(egrep '^.+=' ../../.env)
 do
     export $VAR
 done
-[ -z "$1" ] || export LOCATION=$2
+[ -z "$1" ] || export DATACENTER=$2
 
 if [ "$COMMAND" = "apply" -o "$COMMAND" = "create" ]
 then
