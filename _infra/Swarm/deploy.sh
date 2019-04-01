@@ -4,9 +4,8 @@
 
 # Read in vars from .env file
 
-for VAR in $(egrep '^.+=' ../.env)
-do
-    export $VAR
+for VAR in $(egrep '^.+=' ../.env); do
+  export $VAR
 done
 
 # Connect to master

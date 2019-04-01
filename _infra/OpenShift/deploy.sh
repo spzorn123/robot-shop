@@ -16,28 +16,24 @@ echo "OpenShift set up complete, ready to deploy Robot Shop now."
 read CONTINUE
 
 # set the environment from the .env file
-for VAR in $(egrep '^.+=' ../.env)
-do
-    export $VAR
+for VAR in $(egrep '^.+=' ../.env); do
+  export $VAR
 done
 
-
 # import all the images from docker hub into OpenShift
-for LINE in $(awk '/^ {2}[a-z]+:$/ {printf "%s", $0} /image: / {print $2}' ../docker-compose.yaml)
-do
-    NAME=$(echo "$LINE" | cut -d: -f1)
-    IMAGE=$(echo "$LINE" | cut -d: -f2-)
-    FULL_IMAGE=$(eval "echo $IMAGE")
+for LINE in $(awk '/^ {2}[a-z]+:$/ {printf "%s", $0} /image: / {print $2}' ../../docker-compose.yaml); do
+  NAME=$(echo "$LINE" | cut -d: -f1)
+  IMAGE=$(echo "$LINE" | cut -d: -f2-)
+  FULL_IMAGE=$(eval "echo $IMAGE")
 
-    echo "NAME $NAME"
-    echo "importing $FULL_IMAGE"
+  echo "NAME $NAME"
+  echo "importing $FULL_IMAGE"
 
-    oc import-image $FULL_IMAGE --from $FULL_IMAGE --confirm
-    # a bit of a hack but appears to work
-    BASE=$(basename $FULL_IMAGE)
-    for VAR in $(egrep '^.+=' ../.env)
-    do
-        oc set env $NAME $VAR
-    done
-    oc new-app -i $BASE --name $NAME
+  oc import-image $FULL_IMAGE --from $FULL_IMAGE --confirm
+
+  BASE=$(basename $FULL_IMAGE)
+  for VAR in $(egrep '^.+=' ../.env); do
+    oc set env $NAME $VAR
+  done
+  oc new-app -i $BASE --name $NAME
 done
