@@ -1,7 +1,7 @@
 #!/bin/sh
 
 if [ "$1" != "create" -a "$1" != "apply" -a "$1" != "delete" -o -z "$2" ]; then
-  echo "Usage: k8-app-services.sh COMMAND LABEL"
+  echo "Usage: k8-newr-kubernetes.sh COMMAND LABEL"
   echo "  COMMAND: create | apply | delete"
   echo "    LABEL: local | eks | aks | gks | oshift"
   exit 1
