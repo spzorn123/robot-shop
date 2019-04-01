@@ -32,6 +32,9 @@ class RatingsAPI extends API {
             if(! $this->_checkSku($sku)) {
                 throw new Exception("$sku not found", 404);
             }
+            if (extension_loaded('newrelic')) { // Ensure PHP agent is available
+              newrelic_add_custom_parameter('cl_sku', $sku);
+            }
             $data = $this->_getRating($sku);
             return $data;
         } else {
@@ -46,6 +49,10 @@ class RatingsAPI extends API {
             $sku = $this->verb;
             $score = intval($this->args[0]);
             $score = min(max(1, $score), 5);
+
+            if (extension_loaded('newrelic')) { // Ensure PHP agent is available
+                newrelic_record_custom_event("SKURating", array("sku"=>$sku, "score"=>$score));
+            }
 
             if(! $this->_checkSku($sku)) {
                 throw new Exception("$sku not found", 404);
@@ -164,6 +171,10 @@ class RatingsAPI extends API {
         return $status == 200;
 
     }
+}
+
+if (extension_loaded('newrelic')) { // Ensure PHP agent is available
+    newrelic_set_appname(getenv('NEW_RELIC_APP_NAME'), getenv('NEW_RELIC_LICENSE_KEY'), true);
 }
 
 if(!array_key_exists('HTTP_ORIGIN', $_SERVER)) {

@@ -1,0 +1,45 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: k8s-nri-rabbitmq-$DATACENTER
+    cloudProvider: $DATACENTER
+  name: k8s-nri-rabbitmq-$DATACENTER
+spec:
+  containers:
+  - env:
+    - name: NRIA_LICENSE_KEY
+      value: $NEW_RELIC_LICENSE_KEY
+    - name: NRIA_CUSTOM_ATTRIBUTES
+      value: '{"clusterName":"$CLUSTER_NAME","datacenter":"$DATACENTER"}'
+    image: newrelic/k8s-nri-rabbitmq:latest
+    name: k8s-nri-rabbitmq-$DATACENTER
+    volumeMounts:
+    - name: work-dir
+      mountPath: /etc
+    resources: {}
+  initContainers:
+  - env:
+    - name: REPO
+    - value: $REPO
+    name: install
+    image: busybox
+    command:
+    - mkdir
+    - "/work-dir/newrelic-infra"
+    - "/work-dir/newrelic-infra/integrations.d"
+    - "&&"
+    - "wget -sO /tmp/config"
+    - "https://github.com/$REPO/robot-shop/blob/master/newrelic-integrations/k8s-nri-rabbitmq-config.sh"
+    - "&&"
+    - "."
+    - "/tmp/config"
+    volumeMounts:
+    - name: workdir
+      mountPath: "/work-dir"
+  volumes:
+  - name: workdir
+    emptyDir: {}
+  restartPolicy: OnFailure
+status: {}

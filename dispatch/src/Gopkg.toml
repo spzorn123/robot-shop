@@ -3,9 +3,5 @@
     branch = "master"
 
 [[constraint]]
-    name = "github.com/instana/go-sensor"
-    version = "~1.4.12"
-
-[[constraint]]
-    name = "github.com/opentracing/opentracing-go"
-    version = "~1.0.2"
+    name = "github.com/newrelic/go-agent"
+    version = "~2.7.0"

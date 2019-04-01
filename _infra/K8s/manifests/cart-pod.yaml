@@ -1,0 +1,50 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: cart-$DATACENTER
+    cloudProvider: $DATACENTER
+  name: cart-$DATACENTER
+spec:
+  containers:
+  - env:
+    - name: NEW_RELIC_APP_NAME
+      value: cart-service-$DATACENTER,cart-service
+    - name: NEW_RELIC_LICENSE_KEY
+      value: $NEW_RELIC_LICENSE_KEY
+    - name: NEW_RELIC_DISTRIBUTED_TRACING_ENABLED
+      value: "true"
+    - name: NEW_RELIC_LABELS
+      value: datacenter:$DATACENTER;service:cart
+    - name: REDIS_HOST
+      value: redis-$DATACENTER
+    - name: CATALOGUE_HOST
+      value: catalogue-$DATACENTER
+    - name: K8S_NODE_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: spec.nodeName
+    - name: K8S_HOST_IP
+      valueFrom:
+        fieldRef:
+          fieldPath: status.hostIP
+    - name: K8S_POD_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.name
+    - name: K8S_POD_IP
+      valueFrom:
+        fieldRef:
+          fieldPath: status.podIP
+    - name: K8S_POD_NAMESPACE
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.namespace
+    image: $REPO/rs-cart:$TAG
+    name: cart
+    ports:
+    - containerPort: 8080
+    resources: {}
+  restartPolicy: OnFailure
+status: {}

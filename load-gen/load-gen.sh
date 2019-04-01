@@ -47,7 +47,7 @@ do
             HOST=$OPTARG
             ;;
         *)
-            echo -e "$USAGE"
+            echo "$USAGE"
             exit 1
             ;;
     esac
@@ -63,4 +63,3 @@ docker run \
     -e "SILENT=$SILENT" \
     -e "ERROR=$ERROR" \
     ${REPO}/rs-load:${TAG}
-

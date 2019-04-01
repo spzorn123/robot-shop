@@ -1,5 +1,6 @@
 package org.steveww.spark;
 
+import com.newrelic.api.agent.NewRelic;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import spark.Spark;
 
@@ -46,9 +47,9 @@ public class Main {
         //
         try {
             cpds = new ComboPooledDataSource();
-            cpds.setDriverClass( "com.mysql.jdbc.Driver" ); //loads the jdbc driver            
+            cpds.setDriverClass( "com.mysql.jdbc.Driver" ); //loads the jdbc driver
             cpds.setJdbcUrl( JDBC_URL );
-            cpds.setUser("shipping");                                  
+            cpds.setUser("shipping");
             cpds.setPassword("secret");
             // some config
             cpds.setMinPoolSize(5);
@@ -98,6 +99,7 @@ public class Main {
         Spark.get("/cities/:code", (req, res) -> {
             String data;
             try {
+                // NewRelic.addCustomParameter("country", req.params(":code"));
                 String query = "select uuid, name from cities where country_code = ?";
                 logger.info("Query " + query);
                 data = queryToJson(query, req.params(":code"));

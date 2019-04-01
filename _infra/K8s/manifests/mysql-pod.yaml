@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: mysql-$DATACENTER
+    cloudProvider: $DATACENTER
+  name: mysql-$DATACENTER
+spec:
+  containers:
+  - image: $REPO/rs-mysql-db:$TAG
+    name: mysql
+    resources: {}
+    securityContext:
+      capabilities:
+        add:
+        - NET_ADMIN
+  restartPolicy: OnFailure
+status: {}

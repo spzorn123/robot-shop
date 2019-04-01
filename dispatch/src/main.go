@@ -10,10 +10,7 @@ import (
     "encoding/json"
 
     "github.com/streadway/amqp"
-    "github.com/instana/go-sensor"
-    ot "github.com/opentracing/opentracing-go"
-    ext "github.com/opentracing/opentracing-go/ext"
-    otlog "github.com/opentracing/opentracing-go/log"
+    "github.com/newrelic/go-agent"
 )
 
 const (
@@ -94,65 +91,22 @@ func getOrderId(order []byte) string {
     return id
 }
 
-func createSpan(headers map[string]interface{}, order string) {
-    // headers is map[string]interface{}
-    // carrier is map[string]string
-    carrier := make(ot.TextMapCarrier)
-    // convert by copying k, v
-    for k, v := range headers {
-        carrier[k] = v.(string)
-    }
-
-    // get the order id
-    log.Printf("order %s\n", order)
-
-    // opentracing
-    var span ot.Span
-    tracer := ot.GlobalTracer()
-    spanContext, err := tracer.Extract(ot.HTTPHeaders, carrier)
-    if err == nil {
-        log.Println("Creating span")
-        // create span
-        span = tracer.StartSpan("getOrder", ot.ChildOf(spanContext))
-        span.SetTag(string(ext.SpanKind), ext.SpanKindConsumerEnum)
-        span.SetTag(string(ext.MessageBusDestination), "robot-shop")
-        span.SetTag("exchange", "robot-shop")
-        span.SetTag("sort", "consume")
-        span.SetTag("address", "rabbitmq")
-        span.SetTag("key", "orders")
-        span.LogFields(otlog.String("orderid", order))
-        defer span.Finish()
-
-        time.Sleep(time.Duration(42 + rand.Int63n(42)) * time.Millisecond)
-        if rand.Intn(100) < errorPercent {
-            span.SetTag("error", true)
-            span.LogFields(
-                otlog.String("error.kind", "Exception"),
-                otlog.String("message", "Failed to dispatch to SOP"))
-            log.Println("Span tagged with error")
-        }
-        processSale(span)
-    } else {
-        log.Println("Failed to get span context")
-        log.Println(err)
-    }
-}
-
-func processSale(parentSpan ot.Span) {
-    tracer := ot.GlobalTracer()
-    span := tracer.StartSpan("processSale", ot.ChildOf(parentSpan.Context()))
-    defer span.Finish()
-    span.SetTag(string(ext.SpanKind), "intermediate")
-    span.LogFields(otlog.String("info", "Order sent for processing"))
+func processSale() {
     time.Sleep(time.Duration(42 + rand.Int63n(42)) * time.Millisecond)
 }
 
-
 func main() {
-    // Instana tracing
-    ot.InitGlobalTracer(instana.NewTracerWithOptions(&instana.Options{
-        Service: Service,
-        LogLevel: instana.Info}))
+    appName, ok := os.LookupEnv("NEW_RELIC_APP_NAME")
+    if !ok {
+        appName = "dispatch-service"
+    }
+    licenseKey, ok := os.LookupEnv("NEW_RELIC_LICENSE_KEY")
+    if ok {
+        config := newrelic.NewConfig(appName, licenseKey)
+        config.CrossApplicationTracer.Enabled = false
+        config.DistributedTracer.Enabled = true
+        newrelic.NewApplication(config)
+    }
 
     // Init amqpUri
     // get host from environment
@@ -202,8 +156,9 @@ func main() {
             for d := range msgs {
                 log.Printf("Order %s\n", d.Body)
                 log.Printf("Headers %v\n", d.Headers)
-                id := getOrderId(d.Body)
-                go createSpan(d.Headers, id)
+                // id := getOrderId(d.Body)
+                time.Sleep(time.Duration(42 + rand.Int63n(42)) * time.Millisecond)
+                processSale()
             }
         }
     }()

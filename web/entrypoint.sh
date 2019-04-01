@@ -4,36 +4,21 @@
 
 # echo "arg 1 $1"
 
-BASE_DIR=/usr/share/nginx/html
+INDEX_HTML=/usr/share/nginx/html/index.html
 
 if [ -n "$1" ]
 then
     exec "$@"
 fi
 
-if [ -n "$INSTANA_EUM_KEY" ]
+if [ -n "$NEW_RELIC_BROWSER_LICENSE_KEY" ]
 then
-    echo "Enabling Instana EUM"
-    TMP_FILE=$(mktemp)
-    sed -e "/ineum/s/INSTANA_EUM_KEY/$INSTANA_EUM_KEY/" $BASE_DIR/eum-tmpl.html > $TMP_FILE
-    if [ -n "$INSTANA_EUM_REPORTING_URL" ]
-    then
-        echo "Setting reporting url $INSTANA_EUM_REPORTING_URL"
-        sed -e "/<\/script>/ i ineum('reportingUrl', '$INSTANA_EUM_REPORTING_URL');" $TMP_FILE > $BASE_DIR/eum.html
-    else
-        cp $TMP_FILE $BASE_DIR/eum.html
-    fi
-
-    rm $TMP_FILE
-else
-    cp $BASE_DIR/empty.html $BASE_DIR/eum.html
+    echo "Enabling New Relic Browser agent"
+    sed -i -e "s/REPLACE_LICENSE_KEY/${NEW_RELIC_BROWSER_LICENSE_KEY}/g" ${INDEX_HTML}
+    sed -i -e "s/REPLACE_APPLICATION_ID/${NEW_RELIC_BROWSER_APPLICATION_ID}/g" ${INDEX_HTML}
 fi
-
-# make sure nginx can access the eum file
-chmod 644 $BASE_DIR/eum.html
 
 # apply environment variables to default.conf
 envsubst < /etc/nginx/conf.d/default.conf.template > /etc/nginx/conf.d/default.conf
 
 exec nginx -g "daemon off;"
-

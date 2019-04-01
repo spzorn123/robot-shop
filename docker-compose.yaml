@@ -3,15 +3,19 @@ services:
   mongodb:
     build:
       context: mongo
-    image: ${REPO}/rs-mongodb:${TAG}
+    image: $REPO/rs-mongodb:$TAG
     networks:
       - robot-shop
     deploy:
       replicas: 1
       restart_policy:
         condition: on-failure
-  redis:
-    image: redis:4.0.6
+  mysql:
+    build:
+      context: mysql
+    image: $REPO/rs-mysql-db:$TAG
+    cap_add:
+      - NET_ADMIN
     networks:
       - robot-shop
     deploy:
@@ -26,10 +30,18 @@ services:
       replicas: 1
       restart_policy:
         condition: on-failure
+  redis:
+    image: redis:4.0.6
+    networks:
+      - robot-shop
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
   catalogue:
     build:
       context: catalogue
-    image: ${REPO}/rs-catalogue:${TAG}
+    image: $REPO/rs-catalogue:$TAG
     depends_on:
       - mongodb
     networks:
@@ -38,23 +50,16 @@ services:
       replicas: 1
       restart_policy:
         condition: on-failure
-  user:
-    build:
-      context: user
-    image: ${REPO}/rs-user:${TAG}
-    depends_on:
-      - mongodb
-      - redis
-    networks:
-      - robot-shop
-    deploy:
-      replicas: 1
-      restart_policy:
-        condition: on-failure
+    environment:
+      - NEW_RELIC_APP_NAME=catalogue-service-$DATACENTER,catalogue-service
+      - NEW_RELIC_LICENSE_KEY=$NEW_RELIC_LICENSE_KEY
+      - NEW_RELIC_DISTRIBUTED_TRACING_ENABLED=true
+      - NEW_RELIC_LABELS=datacenter:$DATACENTER;service:catalogue
+      - MONGO_URL=mongodb://mongodb:27017/catalogue
   cart:
     build:
       context: cart
-    image: ${REPO}/rs-cart:${TAG}
+    image: $REPO/rs-cart:$TAG
     depends_on:
       - redis
     networks:
@@ -63,22 +68,37 @@ services:
       replicas: 1
       restart_policy:
         condition: on-failure
-  mysql:
+    environment:
+      - NEW_RELIC_APP_NAME=cart-service-$DATACENTER,cart-service
+      - NEW_RELIC_LICENSE_KEY=$NEW_RELIC_LICENSE_KEY
+      - NEW_RELIC_DISTRIBUTED_TRACING_ENABLED=true
+      - NEW_RELIC_LABELS=datacenter:$DATACENTER;service:cart
+      - CATALOGUE_HOST=catalogue
+      - REDIS_HOST=redis
+  user:
     build:
-      context: mysql
-    image: ${REPO}/rs-mysql-db:${TAG}
-    cap_add:
-      - NET_ADMIN
+      context: user
+    image: $REPO/rs-user:$TAG
+    depends_on:
+      - mongodb
+      - redis
     networks:
       - robot-shop
     deploy:
       replicas: 1
       restart_policy:
         condition: on-failure
+    environment:
+      - NEW_RELIC_APP_NAME=user-service-$DATACENTER,user-service
+      - NEW_RELIC_LICENSE_KEY=$NEW_RELIC_LICENSE_KEY
+      - NEW_RELIC_DISTRIBUTED_TRACING_ENABLED=true
+      - NEW_RELIC_LABELS=datacenter:$DATACENTER;service:user
+      - MONGO_URL=mongodb://mongodb:27017/users
+      - REDIS_HOST=redis
   shipping:
     build:
       context: shipping
-    image: ${REPO}/rs-shipping:${TAG}
+    image: $REPO/rs-shipping:$TAG
     depends_on:
       - mysql
     networks:
@@ -87,10 +107,17 @@ services:
       replicas: 1
       restart_policy:
         condition: on-failure
+    environment:
+      - NEW_RELIC_APP_NAME=shipping-service-$DATACENTER;shipping-service
+      - NEW_RELIC_LICENSE_KEY=$NEW_RELIC_LICENSE_KEY
+      - NEW_RELIC_DISTRIBUTED_TRACING_ENABLED=true
+      - NEW_RELIC_LABELS=datacenter:$DATACENTER;service:shipping
+      - CART_ENDPOINT=cart:8080
+      - DB_HOST=mysql
   ratings:
     build:
       context: ratings
-    image: ${REPO}/rs-ratings:${TAG}
+    image: $REPO/rs-ratings:$TAG
     networks:
       - robot-shop
     depends_on:
@@ -99,17 +126,29 @@ services:
       replicas: 1
       restart_policy:
         condition: on-failure
+    environment:
+      - NEW_RELIC_APP_NAME=ratings-service-$DATACENTER;ratings-service
+      - NEW_RELIC_LICENSE_KEY=$NEW_RELIC_LICENSE_KEY
+      - NEW_RELIC_DISTRIBUTED_TRACING_ENABLED=true
+      - NEW_RELIC_LABELS=datacenter:$DATACENTER;service:ratings
+      - CATALOGUE_URL=http://catalogue:8080/
+      - PDO_URL=mysql:host=mysql;dbname=ratings;charset=utf8mb4
   payment:
     build:
       context: payment
-    image: ${REPO}/rs-payment:${TAG}
+    image: $REPO/rs-payment:$TAG
     depends_on:
       - rabbitmq
     networks:
       - robot-shop
-    # Uncomment to change payment gateway
-    #environment:
-      #PAYMENT_GATEWAY: "https://www.worldpay.com"
+    environment:
+      - NEW_RELIC_APP_NAME=payment-service-$DATACENTER;payment-service
+      - NEW_RELIC_LICENSE_KEY=$NEW_RELIC_LICENSE_KEY
+      - NEW_RELIC_DISTRIBUTED_TRACING_ENABLED=true
+      - NEW_RELIC_LABELS=datacenter:$DATACENTER;service:payment
+      - AMQP_HOST=rabbitmq
+      - CART_HOST=cart
+      - USER_HOST=user
     deploy:
       replicas: 1
       restart_policy:
@@ -117,11 +156,16 @@ services:
   dispatch:
     build:
       context: dispatch
-    image: ${REPO}/rs-dispatch:${TAG}
+    image: $REPO/rs-dispatch:$TAG
     depends_on:
       - rabbitmq
     networks:
       - robot-shop
+    environment:
+      - NEW_RELIC_APP_NAME=dispatch-service-$DATACENTER;dispatch-service
+      - NEW_RELIC_LICENSE_KEY=$NEW_RELIC_LICENSE_KEY
+      - NEW_RELIC_DISTRIBUTED_TRACING_ENABLED=true
+      - AMQP_HOST=rabbitmq
     deploy:
       replicas: 1
       restart_policy:
@@ -129,24 +173,28 @@ services:
   web:
     build:
       context: web
-    image: ${REPO}/rs-web:${TAG}
+    image: $REPO/rs-web:$TAG
     depends_on:
       - catalogue
       - user
       - shipping
       - payment
     ports:
-      - "8080:8080"
+      - "8888:8080"
     networks:
       - robot-shop
     deploy:
       replicas: 1
       restart_policy:
         condition: on-failure
-    # Uncomment to enable Instana EUM
-    # environment:
-      # INSTANA_EUM_KEY: <your eum key here>
-
+    environment:
+      - NEW_RELIC_BROWSER_LICENSE_KEY=$NEW_RELIC_BROWSER_LICENSE_KEY
+      - NEW_RELIC_BROWSER_APPLICATION_ID=$NEW_RELIC_BROWSER_APPLICATION_ID
+      - CATALOGUE_HOST=catalogue
+      - USER_HOST=user
+      - CART_HOST=cart
+      - SHIPPING_HOST=shipping
+      - PAYMENT_HOST=payment
+      - RATINGS_HOST=ratings
 networks:
   robot-shop:
-

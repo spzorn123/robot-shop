@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: ratings-$DATACENTER
+    cloudProvider: $DATACENTER
+  name: ratings-$DATACENTER
+spec:
+  containers:
+  - env:
+    - name: NEW_RELIC_APP_NAME
+      value: ratings-service-$DATACENTER;ratings-service
+    - name: NEW_RELIC_LICENSE_KEY
+      value: $NEW_RELIC_LICENSE_KEY
+    - name: NEW_RELIC_DISTRIBUTED_TRACING_ENABLED
+      value: "true"
+    - name: NEW_RELIC_LABELS
+      value: datacenter:$DATACENTER;service:ratings
+    - name: CATALOGUE_URL
+      value: http://catalogue-$DATACENTER:8080/
+    - name: PDO_URL
+      value: mysql:host=mysql-$DATACENTER;dbname=ratings;charset=utf8mb4
+    image: $REPO/rs-ratings:$TAG
+    name: ratings
+    ports:
+    - containerPort: 8080
+    resources: {}
+  restartPolicy: OnFailure
+status: {}

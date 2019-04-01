@@ -22,10 +22,11 @@ EXPOSE 8080
 
 WORKDIR /opt/shipping
 
-ENV CART_ENDPOINT=cart:8080
-ENV DB_HOST=mysql
-
 COPY --from=build /opt/shipping/target/shipping-1.0-jar-with-dependencies.jar shipping.jar
+RUN \
+  mkdir /opt/newrelic && \
+  wget -O /opt/newrelic/newrelic.jar http://download.newrelic.com/newrelic/java-agent/newrelic-agent/current/newrelic.jar && \
+  wget -O /opt/newrelic/newrelic.yml http://download.newrelic.com/newrelic/java-agent/newrelic-agent/current/newrelic.yml
 
-CMD [ "java", "-Xmn256m", "-Xmx768m", "-jar", "shipping.jar" ]
-
+CMD [ "java", "-javaagent:/opt/newrelic/newrelic.jar", "-Xmn256m", "-Xmx768m", "-jar", "shipping.jar" ]
+# "-Dnewrelic.config.distributed_tracing.enabled=$NEW_RELIC_DISTRIBUTED_TRACING_ENABLED"

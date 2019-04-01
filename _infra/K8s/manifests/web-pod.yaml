@@ -1,0 +1,54 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: web-$DATACENTER
+    cloudProvider: $DATACENTER
+  name: web-$DATACENTER
+spec:
+  containers:
+  - env:
+    - name: NEW_RELIC_BROWSER_APPLICATION_ID
+      value: "$NEW_RELIC_BROWSER_APPLICATION_ID"
+    - name: NEW_RELIC_BROWSER_LICENSE_KEY
+      value: $NEW_RELIC_BROWSER_LICENSE_KEY
+    - name: CATALOGUE_HOST
+      value: catalogue-$DATACENTER
+    - name: USER_HOST
+      value: user-$DATACENTER
+    - name: CART_HOST
+      value: cart-$DATACENTER
+    - name: SHIPPING_HOST
+      value: shipping-$DATACENTER
+    - name: PAYMENT_HOST
+      value: payment-$DATACENTER
+    - name: RATINGS_HOST
+      value: ratings-$DATACENTER
+    - name: K8S_NODE_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: spec.nodeName
+    - name: K8S_HOST_IP
+      valueFrom:
+        fieldRef:
+          fieldPath: status.hostIP
+    - name: K8S_POD_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.name
+    - name: K8S_POD_IP
+      valueFrom:
+        fieldRef:
+          fieldPath: status.podIP
+    - name: K8S_POD_NAMESPACE
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.namespace
+    image: $REPO/rs-web:$TAG
+    name: web
+    ports:
+    - containerPort: 8080
+    resources: {}
+  restartPolicy: OnFailure
+status: {}

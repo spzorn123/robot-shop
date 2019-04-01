@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: mongodb-$DATACENTER
+    cloudProvider: $DATACENTER
+  name: mongodb-$DATACENTER
+spec:
+  containers:
+  - image: $REPO/rs-mongodb:$TAG
+    name: mongodb
+    resources: {}
+  restartPolicy: OnFailure
+status: {}
